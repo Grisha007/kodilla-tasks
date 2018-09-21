@@ -12,7 +12,7 @@ public class TaskMapper {
         return new Task(taskDto.getId(), taskDto.getTitle(), taskDto.getContent());
     }
 
-    public TaskDto maToTaskDto(final Task task) {
+    public TaskDto mapToTaskDto(final Task task) {
         return new TaskDto(task.getId(), task.getTitle(), task.getContent());
     }
 
