@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.Optional;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -68,14 +71,9 @@ public class TaskControllerTest {
                 .andExpect(status().isOk())
                 //TaskDto fields
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is("1")))
+                .andExpect(jsonPath("$[0].id", is(1)))
                 .andExpect(jsonPath("$[0].title", is("Task Dto test title")))
-                .andExpect(jsonPath("$[0].content", is("Task Dto test content")))
-                //Task fields
-                .andExpect(jsonPath("$[0].lists", hasSize(1)))
-                .andExpect(jsonPath("$[0].lists[0].id", is("1")))
-                .andExpect(jsonPath("$[0].lists[0].title", is("Task test title")))
-                .andExpect(jsonPath("$[0].lists[0].content", is("Task test content")));
+                .andExpect(jsonPath("$[0].content", is("Task Dto test content")));
     }
 
     @Test
@@ -85,7 +83,7 @@ public class TaskControllerTest {
         TaskDto taskDto = new TaskDto(1L, "Task Dto test title", "Task Dto test content");
 
         when(dbService.getTask(task.getId())).thenReturn(Optional.ofNullable(task));
-        when(taskMapper.mapToTaskDto(task)).thenReturn(taskDto);
+        when(taskMapper.mapToTaskDto(any(Task.class))).thenReturn(taskDto);
 
         Gson gson = new Gson();
         String jsonContent = gson.toJson(taskDto);
@@ -95,17 +93,15 @@ public class TaskControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding("UTF-8")
                 .content(jsonContent))
-                .andExpect(jsonPath("$.id", is("1")))
-                .andExpect(jsonPath("$.title", is("Task test title")))
-                .andExpect(jsonPath("$.content", is("Task test content")));
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.title", is("Task Dto test title")))
+                .andExpect(jsonPath("$.content", is("Task Dto test content")));
     }
 
     @Test
     public void testDeleteTask() throws Exception {
         //Given
         Task task = new Task(1L, "Task test title", "Task test content");
-
-        dbService.deleteTaskById(task.getId());
 
         Gson gson = new Gson();
         String jsonContent = gson.toJson(task);
@@ -115,7 +111,7 @@ public class TaskControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding("UTF-8")
                 .content(jsonContent))
-//                .andExpect(jsonPath("$.id", is(1L)))
+//                .andExpect(jsonPath("$.id", is(1)))
 //                .andExpect(jsonPath("$.title", is("Task test title")))
 //                .andExpect(jsonPath("$.content", is("Task test content")))
                 .andExpect(status().isOk());
@@ -127,7 +123,7 @@ public class TaskControllerTest {
         Task task = new Task(1L, "Task test title", "Task test content");
         TaskDto taskDto = new TaskDto(1L, "Task Dto test title", "Task Dto test content");
 
-        when(taskMapper.mapToTask(taskDto)).thenReturn(task);
+        when(taskMapper.mapToTask(any(TaskDto.class))).thenReturn(task);
         when(dbService.saveTask(task)).thenReturn(task);
         when(taskMapper.mapToTaskDto(task)).thenReturn(taskDto);
 
@@ -139,9 +135,9 @@ public class TaskControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding("UTF-8")
                 .content(jsonContent))
-                .andExpect(jsonPath("$.id", is("1")))
-                .andExpect(jsonPath("$.title", is("Task test title")))
-                .andExpect(jsonPath("$.content", is("Task test content")));
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.title", is("Task Dto test title")))
+                .andExpect(jsonPath("$.content", is("Task Dto test content")));
     }
 
     @Test
@@ -150,8 +146,8 @@ public class TaskControllerTest {
         Task task = new Task(1L, "Task test title", "Task test content");
         TaskDto taskDto = new TaskDto(1L, "Task Dto test title", "Task Dto test content");
 
-        when(taskMapper.mapToTask(taskDto)).thenReturn(task);
-        when(dbService.saveTask(task)).thenReturn(task);
+        when(taskMapper.mapToTask(any(TaskDto.class))).thenReturn(task);
+        // when(dbService.saveTask(task)).thenReturn(task);
 
         Gson gson = new Gson();
         String jsonContent = gson.toJson(task);
@@ -161,8 +157,11 @@ public class TaskControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding("UTF-8")
                 .content(jsonContent))
-                .andExpect(jsonPath("$.id", is("1")))
-                .andExpect(jsonPath("$.title", is("Task test title")))
-                .andExpect(jsonPath("$.content", is("Task test content")));
+//                .andExpect(jsonPath("$.id", is(1)))
+//                .andExpect(jsonPath("$.title", is("Task test title")))
+//                .andExpect(jsonPath("$.content", is("Task test content")));
+                .andExpect(status().isOk());
+
+        verify(dbService, times(1)).saveTask(task);
     }
 }
